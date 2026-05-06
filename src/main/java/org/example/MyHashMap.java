@@ -24,12 +24,8 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
 
     }
 
-    private  boolean keyIsNull(K key) {
-        return (Objects.equals(key, null));
-    }
-
-    private int hash(int h) {
-        return  h ^ (h >>> 16);
+    private int hash(K key) {
+        return key == null ? 0 : (key.hashCode() ^ (key.hashCode() >>> 16));
     }
 
     private int indexFor(int h, int length) {
@@ -40,21 +36,6 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
         Entry<K, V> e = table[index];
         table[index] = new Entry<>(key, value, hash, e);
         size++;
-    }
-
-    private void putForNullKey(V value) {
-        Entry<K,V> e = table[0];
-
-        while (e != null) {
-
-            if (e.key == null) {
-                e.value = value;
-                return;
-            }
-
-            e = e.next;
-        }
-        addEntry(null, value, 0, 0);
     }
 
     private void transfer( Entry<K,V>[] newTable) {
@@ -93,18 +74,16 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
             resize(capacity * 2);
         }
 
-        if (keyIsNull(key)) {
-            putForNullKey(value);
-            return;
-        }
 
-        int hash = hash(key.hashCode());
+
+        int hash = hash(key);
         int index = indexFor(hash, capacity);
         Entry<K, V> e = table[index];
 
         while (e != null) {
 
-            if (e.hash == hash && (key.equals(e.key))) {
+            if (e.hash == hash &&
+                    (key == null ? e.key == null : key.equals(e.key))) {
                 e.value = value;
                 return;
             }
@@ -118,27 +97,13 @@ public class MyHashMap<K, V> implements MyMap<K, V> {
     @Override
     public V getValue(K key) {
 
-        if (keyIsNull(key)) {
-            Entry<K, V> e = table[0];
-
-            while (e != null) {
-
-                if (e.key == null) {
-                    return e.value;
-                }
-
-                e = e.next;
-            }
-            return null;
-        }
-
-        int hash = hash(key.hashCode());
+        int hash = hash(key);
         int index = indexFor(hash, capacity);
         Entry<K, V> e = table[index];
 
         while (e != null) {
 
-            if (key.equals(e.key)) {
+            if (e.hash == hash && (key == null ? e.key == null : key.equals(e.key)))  {
                 return e.value;
             }
 
